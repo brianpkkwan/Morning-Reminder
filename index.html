@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#e9edf5">
+  <title>Good morning — a little glow for your day</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page: #e9edf5;
+      --surface: #fffdfd;
+      --surface-soft: #fff7fa;
+      --ink: #392b38;
+      --muted: #5c6879;
+      --line: rgb(49 67 91 / 18%);
+      --green: #496e91;
+      --green-soft: #dceaf5;
+      --accent: #496e91;
+      --accent-wash: rgb(255 255 255 / 30%);
+      --shadow: 0 18px 46px rgb(57 70 99 / 12%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      margin: 0;
+      padding: 34px 18px 48px;
+      background:
+        radial-gradient(ellipse at 8% 5%, rgb(203 214 239 / 75%), transparent 32%),
+        radial-gradient(ellipse at 91% 19%, rgb(214 222 239 / 72%), transparent 36%),
+        radial-gradient(ellipse at 52% 92%, rgb(222 230 242 / 67%), transparent 38%),
+        var(--page);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.5;
+      transition: background-color .25s ease;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .app { position:relative; width: min(100%, 1100px); margin: 0 auto; }
+    .topline { display:flex; align-items:center; justify-content:space-between; margin: 0 2px 19px; }
+    .brand { display:flex; align-items:center; gap:9px; color:#50627b; font-size:11px; font-weight:760; letter-spacing:.12em; }
+    .brand-mark { display:grid; place-items:center; width:31px; height:31px; border:1px solid #cbd8ea; border-radius:11px; background:linear-gradient(145deg,#f8fbff,#dce8f5); color:#4c6f94; font-size:16px; box-shadow:0 4px 12px rgb(60 83 120 / 10%); }
+    .date-label { border:1px solid #ccd6e4; border-radius:99px; padding:6px 10px; color:#50627b; background:rgb(255 255 255 / 66%); font-size:11px; }
+    h1 { margin:0; color:#2e3b50; font-size:clamp(28px, 7vw, 35px); line-height:1.15; letter-spacing:-.05em; font-weight:760; }
+    .subtitle { margin:8px 0 22px; color:var(--muted); font-size:14px; }
+    .stack { display:grid; gap:19px; }
+    .card { border:1px solid rgb(255 255 255 / 72%); border-radius:4px; box-shadow:var(--shadow); }
+    .weather-card { --weather-accent:#5686ae; --weather-wash:#cde7f7; padding:25px 29px 20px; overflow:hidden; color:#233d55; background:linear-gradient(112deg,#d9effb 0%,#cce6f6 48%,#d5eaf5 100%); }
+    .weather-card[data-weather="rain"] { --weather-accent:#477da8; --weather-wash:#c8e0f2; background:linear-gradient(112deg,#cee6f7,#c5dff3 52%,#cceaf0); }
+    .weather-card[data-weather="cloud"] { --weather-accent:#657f98; --weather-wash:#d7e5f0; background:linear-gradient(112deg,#d9eaf5,#d5e3ef 52%,#d2e8ee); }
+    .weather-card[data-weather="sun"] { --weather-accent:#c08441; --weather-wash:#ffedcb; background:linear-gradient(112deg,#d9effb 0%,#cce6f6 48%,#d5eaf5 100%); }
+    .weather-card[data-weather="storm"] { --weather-accent:#70609b; --weather-wash:#dcdaf0; background:linear-gradient(112deg,#d1e3f4,#d7ddf1 52%,#cee6ee); }
+    .weather-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .section-kicker { color:var(--muted); text-transform:uppercase; font-size:11px; font-weight:750; letter-spacing:.13em; }
+    .location-wrap { position:relative; }
+    .location-button { display:flex; gap:7px; align-items:center; border:1px solid rgb(51 85 115 / 17%); border-radius:99px; padding:5px 10px; background:rgb(255 255 255 / 58%); cursor:pointer; color:var(--ink); font-size:12px; font-weight:650; }
+    .location-button span:first-child { max-width:195px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .location-menu { position:absolute; z-index:4; top:calc(100% + 8px); right:0; width:min(300px, 82vw); padding:11px; border:1px solid var(--line); border-radius:15px; background:var(--surface); box-shadow:0 15px 45px rgb(0 0 0 / 15%); }
+    .location-menu[hidden] { display:none; }
+    .search-row { display:flex; align-items:center; gap:8px; }
+    .search-input { min-width:0; flex:1; border:1px solid var(--line); border-radius:10px; padding:9px 10px; outline:none; color:var(--ink); background:var(--surface-soft); font-size:14px; }
+    .search-input:focus { border-color:var(--green); box-shadow:0 0 0 3px color-mix(in srgb, var(--green) 17%, transparent); }
+    .search-button { width:38px; height:38px; border:0; border-radius:11px; background:linear-gradient(145deg,#c781a0,#a96081); color:#fff; cursor:pointer; font-weight:700; box-shadow:0 5px 12px rgb(154 83 118 / 20%); }
+    .search-hint { margin:7px 3px 0; color:var(--muted); font-size:12px; }
+    .weather-main { display:flex; align-items:center; justify-content:space-between; min-height:130px; padding:14px 4px 13px; }
+    .temperature { font-size:68px; font-weight:650; letter-spacing:-.075em; line-height:1; }
+    .temperature sup { position:relative; top:-.12em; margin-left:2px; font-size:27px; letter-spacing:-.03em; }
+    .condition { margin-top:9px; color:var(--muted); font-size:14px; }
+    .weather-icon { display:grid; place-items:center; width:99px; height:99px; border:1px solid color-mix(in srgb,var(--weather-accent) 18%,transparent); border-radius:32px; background:linear-gradient(145deg,color-mix(in srgb,var(--weather-wash) 68%,white),var(--weather-wash)); font-size:51px; box-shadow:0 9px 24px color-mix(in srgb,var(--weather-accent) 14%,transparent); }
+    .weather-meta { display:flex; gap:16px; color:var(--muted); font-size:12px; }
+    .weather-meta span { display:flex; align-items:center; gap:5px; }
+    .forecast { display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:5px; margin-top:19px; padding-top:15px; border-top:1px solid var(--line); }
+    .forecast-day { display:flex; flex-direction:column; align-items:center; gap:5px; min-width:0; padding:7px 1px; border-radius:0; }
+    .forecast-day:first-child { box-shadow:inset 0 -2px var(--weather-accent); }
+    .forecast-name { color:var(--muted); font-size:11px; }
+    .forecast-icon { font-size:17px; line-height:1.4; }
+    .forecast-high { font-size:11px; font-weight:700; }
+    .forecast-low { margin-top:-5px; color:var(--muted); font-size:10px; }
+    .source-line { display:flex; align-items:center; justify-content:space-between; margin:11px 2px 0; color:var(--muted); font-size:11px; }
+    .live-dot { display:inline-block; width:6px; height:6px; margin-right:5px; border-radius:50%; background:#62a579; vertical-align:1px; }
+    .live-dot.fallback { background:#d6a352; }
+    .section-card { padding:23px 25px; }
+    .section-header { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .section-title { display:flex; align-items:center; gap:10px; }
+    .section-icon { display:grid; place-items:center; width:36px; height:36px; border:1px solid rgb(38 57 78 / 14%); border-radius:13px; background:rgb(255 255 255 / 48%); color:#3d5875; font-size:17px; }
+    .section-title h2 { margin:0; font-size:16px; letter-spacing:-.02em; }
+    .eyebrow { margin-top:1px; color:var(--muted); font-size:12px; }
+    .route-pill { border:1px solid rgb(93 73 27 / 18%); border-radius:99px; padding:5px 10px; background:rgb(255 255 255 / 48%); color:#654c20; font-size:11px; font-weight:780; letter-spacing:.03em; }
+    .bus-destinations { display:flex; align-items:center; justify-content:space-between; gap:7px; margin:16px 0 13px; color:var(--muted); font-size:12px; }
+    .bus-stop { color:var(--ink); font-size:13px; font-weight:650; }
+    .bus-arrow { flex:1; height:1px; border-top:1px dashed var(--line); text-align:center; color:var(--muted); line-height:0; }
+    .bus-times { display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin-top:18px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .bus-time { padding:15px 8px 13px; text-align:center; }
+    .bus-time + .bus-time { border-left:1px solid var(--line); }
+    .bus-time strong { display:block; font-size:clamp(18px, 2vw, 24px); letter-spacing:-.04em; }
+    .bus-time span { color:var(--muted); font-size:11px; }
+    .bus-note { margin:10px 1px 0; color:var(--muted); font-size:11px; }
+    .reminder-card { padding:22px 22px 18px; }
+    .progress-count { border:1px solid rgb(38 57 78 / 17%); border-radius:99px; padding:5px 9px; color:#365371; background:rgb(255 255 255 / 48%); font-size:11px; font-weight:720; white-space:nowrap; }
+    .checklist { display:grid; gap:2px; margin:14px 0 0; padding:0; list-style:none; }
+    .check-row { display:flex; align-items:center; gap:10px; min-height:43px; padding:5px 1px; border-bottom:1px solid var(--line); cursor:pointer; }
+    .check-row:last-child { border-bottom:0; }
+    .check-row input { position:absolute; width:1px; height:1px; opacity:0; }
+    .custom-check { display:grid; place-items:center; flex:none; width:20px; height:20px; border:1.5px solid rgb(38 57 78 / 37%); border-radius:7px; color:transparent; transition:.15s ease; }
+    .check-row input:focus-visible + .custom-check { outline:3px solid color-mix(in srgb, var(--green) 28%, transparent); outline-offset:2px; }
+    .check-row input:checked + .custom-check { border-color:var(--green); background:var(--green); color:white; }
+    .custom-check svg { width:13px; height:13px; }
+    .item-label { flex:1; font-size:14px; font-weight:540; }
+    .check-row input:checked ~ .item-label { color:var(--muted); text-decoration:line-through; text-decoration-color:#aab4ab; }
+    .item-emoji { width:25px; text-align:center; font-size:17px; }
+    .special-label { margin:14px 0 6px; color:var(--muted); font-size:12px; font-weight:650; }
+    .special-row { display:flex; align-items:center; gap:9px; padding:4px 0; }
+    .special-input { min-width:0; flex:1; border:0; border-bottom:1px dashed rgb(38 57 78 / 35%); border-radius:0; padding:8px 2px; outline:none; color:var(--ink); background:transparent; font-size:14px; }
+    .special-input:focus { border-bottom:1px solid var(--green); }
+    .special-input::placeholder { color:#566b7e; }
+    .special-check { display:flex; align-items:center; gap:7px; color:var(--muted); font-size:12px; white-space:nowrap; cursor:pointer; }
+    .special-check input { accent-color:var(--green); width:16px; height:16px; }
+    .status-message { min-height:0; margin:4px 0 0; color:#a55d47; font-size:12px; }
+    .status-message:empty { display:none; }
+    .footer-note { padding:4px 0 0; color:var(--muted); text-align:center; font-size:11px; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .lower-grid { display:grid; grid-template-columns:minmax(0, 2fr) minmax(220px, 1fr); gap:19px; align-items:stretch; }
+    .left-column { display:grid; grid-template-rows:auto minmax(0,1fr); align-content:stretch; gap:16px; min-width:0; }
+    .bus-card { background:linear-gradient(125deg,#fff6d8 0%,#fff0c5 55%,#faedc3 100%); color:#483d28; }
+    .news-card { padding:20px 24px; color:#303b50; background:linear-gradient(125deg,#e7eafb 0%,#e2eaf7 55%,#e5eff4 100%); }
+    .news-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .news-tag { border-radius:99px; padding:4px 9px; color:#4c5780; background:rgb(255 255 255 / 65%); font-size:10px; font-weight:800; letter-spacing:.08em; white-space:nowrap; }
+    .news-lead { display:block; margin-top:14px; color:#2b3548; font-size:17px; font-weight:730; line-height:1.35; text-decoration:none; }
+    .news-lead:hover,.news-item a:hover { text-decoration:underline; text-underline-offset:3px; }
+    .news-summary { margin:8px 0 0; color:#4d5d72; font-size:13px; line-height:1.55; }
+    .news-list { display:grid; gap:0; margin:13px 0 0; padding:0; list-style:none; }
+    .news-item { padding:9px 0; border-top:1px solid rgb(48 59 80 / 14%); }
+    .news-item a { color:#374860; font-size:13px; font-weight:620; text-decoration:none; }
+    .news-source { display:flex; justify-content:space-between; gap:10px; margin-top:12px; color:#5c6b7d; font-size:11px; }
+    .news-empty { padding:18px 0 4px; color:#53647a; font-size:13px; }
+    .reminder-card { display:flex; flex-direction:column; background:linear-gradient(145deg,#e0f0fb 0%,#d3e9f8 54%,#dbeef5 100%); color:#293f56; }
+    .reminder-card .checklist { flex:none; display:grid; justify-content:initial; }
+    .reminder-footer { margin-top:auto; padding-top:15px; border-top:1px solid var(--line); color:color-mix(in srgb,currentColor 68%,transparent); font-size:12px; }
+    .lower-grid .section-title h2 { color:inherit; }
+    .lower-grid .eyebrow,.bus-note { color:color-mix(in srgb, currentColor 70%, transparent); }
+    .bus-stop { color:inherit; }
+    .lower-grid .check-row input:checked ~ .item-label { color:color-mix(in srgb, currentColor 62%, transparent); }
+    .special-input::placeholder { color:color-mix(in srgb, currentColor 52%, transparent); }
+    .footer-note { padding-top:0; }
+    @media (max-width:650px) {
+      .app { width:min(100%, 560px); }
+      .lower-grid { grid-template-columns:1fr; }
+      .left-column { grid-template-rows:auto auto; }
+      .reminder-card { min-height:auto; }
+      .reminder-card .checklist { flex:none; }
+    }
+    @media (min-width:651px) and (max-width:850px) {
+      .reminder-card { padding:17px 15px; }
+      .reminder-card .section-header { align-items:flex-start; flex-direction:column; gap:7px; }
+      .reminder-card .section-title { gap:7px; }
+      .reminder-card .section-icon { width:30px; height:30px; flex:none; }
+      .reminder-card .section-title h2 { font-size:15px; }
+      .reminder-card .eyebrow { font-size:11px; }
+      .reminder-card .progress-count { align-self:flex-end; margin-top:-4px; }
+      .reminder-card .special-row { display:grid; grid-template-columns:25px minmax(0,1fr); }
+      .reminder-card .special-check { grid-column:2; justify-self:end; }
+    }
+    @media (max-width:390px) {
+      body { padding:23px 13px 35px; }
+      .weather-card,.section-card,.reminder-card { padding:17px 16px; }
+      .weather-icon { width:83px; height:83px; font-size:43px; }
+      .temperature { font-size:60px; }
+      .forecast { gap:1px; }
+      .forecast-name { font-size:10px; }
+      .weather-meta { gap:10px; font-size:11px; }
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page:#1b2330; --surface:#282128; --surface-soft:#211b23; --ink:#f0f4fa;
+        --muted:#c5cfdd; --line:rgb(255 255 255 / 20%); --green:#a8c9e8; --green-soft:#35475b;
+        --accent-wash:#36485b; --shadow:0 20px 55px rgb(0 0 0 / 25%);
+      }
+      body { background:radial-gradient(ellipse at 8% 5%,rgb(56 83 122 / 38%),transparent 32%),radial-gradient(ellipse at 91% 19%,rgb(52 69 108 / 34%),transparent 36%),radial-gradient(ellipse at 52% 92%,rgb(55 82 104 / 26%),transparent 38%),var(--page); }
+      h1 { color:#eef4fb; }
+      .brand { color:#c1d0e2; }
+      .brand-mark { border-color:#4a5e77; background:linear-gradient(145deg,#34475e,#2b394c); color:#c8e2f8; }
+      .date-label,.location-button { border-color:#53647a; background:#2a3545; color:#d5e1f0; }
+      .section-icon { border-color:rgb(255 255 255 / 22%); background:rgb(255 255 255 / 12%); color:#d8e8f8; }
+      .route-pill { border-color:rgb(255 255 255 / 28%); background:rgb(255 255 255 / 22%); color:#544524; }
+      .custom-check { border-color:rgb(255 255 255 / 48%); }
+      .progress-count { border-color:rgb(255 255 255 / 28%); background:rgb(255 255 255 / 18%); color:#e3f1ff; }
+      .weather-icon { background:linear-gradient(145deg,color-mix(in srgb,var(--weather-wash) 78%,#282128),var(--weather-wash)); }
+      .special-input { border-bottom-color:rgb(255 255 255 / 40%); }
+      .weather-card { color:#233d55; }
+      .bus-card { background:linear-gradient(125deg,#544a33 0%,#51472e 55%,#48432d 100%); color:#fff4d6; }
+      .bus-card .route-pill { color:#fff0c5; }
+      .reminder-card { background:linear-gradient(145deg,#34495e 0%,#304a62 54%,#354f60 100%); color:#eff7ff; }
+      .news-card { background:linear-gradient(125deg,#343b54 0%,#34475d 100%); color:#f0f4fa; }
+      .news-lead,.news-item a { color:#f0f4fa; }
+      .news-summary,.news-source,.news-empty { color:#c6d2e1; }
+      .news-tag { color:#e1e8fa; background:rgb(255 255 255 / 13%); }
+      .news-item { border-color:rgb(255 255 255 / 18%); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="topline">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">☀</span> DAYLIGHT · MORNING REMINDER</div>
+      <time class="date-label" id="today"></time>
+    </div>
+    <header>
+      <h1 id="greeting">A gentler start.</h1>
+      <p class="subtitle">A little glow for your day, all in one place <span aria-hidden="true">✧</span></p>
+    </header>
+
+    <div class="stack">
+      <section class="card weather-card" id="weatherCard" data-weather="sun" aria-labelledby="weatherTitle">
+        <div class="weather-head">
+          <div class="section-kicker" id="weatherTitle">Your local weather</div>
+          <div class="location-wrap">
+            <button class="location-button" id="locationToggle" type="button" aria-expanded="false" aria-controls="locationMenu">
+              <span id="locationName">Tai Kok Tsui</span><span aria-hidden="true">⌄</span>
+            </button>
+            <form class="location-menu" id="locationMenu" hidden>
+              <label class="sr-only" for="locationInput">Search for a place</label>
+              <div class="search-row">
+                <input class="search-input" id="locationInput" type="search" placeholder="Search a Hong Kong location" autocomplete="off">
+                <button class="search-button" type="submit" aria-label="Search location">⌕</button>
+              </div>
+              <p class="search-hint">Search a place in Hong Kong to use its nearest Observatory station.</p>
+            </form>
+          </div>
+        </div>
+        <div class="weather-main">
+          <div>
+            <div class="temperature"><span id="currentTemp">27</span><sup>°</sup></div>
+            <div class="condition" id="currentCondition">Partly cloudy</div>
+          </div>
+          <div class="weather-icon" id="currentIcon" aria-hidden="true">🌤️</div>
+        </div>
+        <div class="weather-meta">
+          <span>↗ <span id="highTemp">H 29°</span></span>
+          <span>↘ <span id="lowTemp">L 24°</span></span>
+          <span>⌁ <span id="humidity">Humidity 78%</span></span>
+        </div>
+        <div class="forecast" id="forecast" aria-label="7-day weather forecast"></div>
+        <div class="source-line"><span><i class="live-dot fallback" id="weatherLiveDot"></i><span id="weatherStatus">Loading Observatory data…</span></span><span id="weatherUpdated">Sample forecast</span></div>
+      </section>
+
+      <div class="lower-grid">
+      <div class="left-column">
+      <section class="card section-card bus-card" aria-labelledby="busTitle">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon" aria-hidden="true">🚌</span>
+            <div><h2 id="busTitle">Your ride, coming up</h2><div class="eyebrow">Next buses from your stop</div></div>
+          </div>
+          <span class="route-pill">CITYBUS 904</span>
+        </div>
+        <div class="bus-destinations">
+          <span class="bus-stop">帝柏海灣</span><span class="bus-arrow" aria-hidden="true">›</span><span class="bus-stop">上環</span>
+        </div>
+        <div class="bus-times" id="busTimes" aria-live="polite">
+          <div class="bus-time"><strong>6 min</strong><span>Coming up</span></div>
+          <div class="bus-time"><strong>14 min</strong><span>Next</span></div>
+          <div class="bus-time"><strong>23 min</strong><span>Then</span></div>
+        </div>
+        <p class="bus-note" id="busNote">Checking live Citybus arrivals…</p>
+      </section>
+
+      <section class="card news-card" aria-labelledby="newsTitle" lang="zh-Hant">
+        <div class="news-heading">
+          <div class="section-title">
+            <span class="section-icon" aria-hidden="true">✦</span>
+            <div><h2 id="newsTitle">今日新聞焦點</h2><div class="eyebrow">香港即時消息</div></div>
+          </div>
+          <span class="news-tag">焦點新聞</span>
+        </div>
+        <div id="newsContent" aria-live="polite"><p class="news-empty">正在整理今日新聞焦點…</p></div>
+      </section>
+      </div>
+
+      <section class="card reminder-card" aria-labelledby="remindersTitle">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-icon" aria-hidden="true">✓</span>
+            <div><h2 id="remindersTitle">Packing list</h2><div class="eyebrow">Your everyday must-haves</div></div>
+          </div>
+          <span class="progress-count" id="progress">0 of 4</span>
+        </div>
+        <ul class="checklist" id="checklist"></ul>
+        <div class="special-label">One little extra for tomorrow?</div>
+        <div class="special-row">
+          <span class="item-emoji" aria-hidden="true">✦</span>
+          <input class="special-input" id="specialItem" type="text" maxlength="80" placeholder="Add a reminder tonight…" aria-label="Add a special item reminder">
+          <label class="special-check"><input id="specialDone" type="checkbox"> Packed</label>
+        </div>
+        <p class="status-message" id="statusMessage" aria-live="polite"></p>
+        <div class="reminder-footer">慢慢來，出門前再確認一次 ♡</div>
+      </section>
+      </div>
+      <div class="footer-note">Take a breath. You’ve got this, lovely. ♡</div>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const STORAGE_KEY = "daylight-reminder-v1";
+      const essentials = [
+        { id: "keys", name: "Keys", icon: "🔑" },
+        { id: "wallet", name: "Wallet", icon: "👛" },
+        { id: "water", name: "Water bottle", icon: "💧" },
+        { id: "phone", name: "Phone", icon: "📱" }
+      ];
+      const stationCoords = {
+        "King's Park": [22.311, 114.172], "Kowloon City": [22.328, 114.191],
+        "Mong Kok": [22.322, 114.169], "Sham Shui Po": [22.331, 114.159],
+        "Cheung Sha Wan": [22.336, 114.148], "Tsim Sha Tsui": [22.297, 114.172],
+        "Wong Tai Sin": [22.342, 114.193], "Kwun Tong": [22.313, 114.226],
+        "Central": [22.302, 114.174], "Sheung Wan": [22.287, 114.15],
+        "Sha Tin": [22.381, 114.188], "Tai Po": [22.45, 114.168],
+        "Tsuen Wan": [22.371, 114.113], "Tuen Mun": [22.391, 113.977],
+        "Hong Kong Park": [22.277, 114.162]
+      };
+      const defaultPlace = { name: "Tai Kok Tsui", lat: 22.319, lon: 114.163 };
+      let place = { ...defaultPlace };
+      let forecastDays = [];
+      let weatherCondition = "Partly cloudy";
+
+      const date = new Date();
+      const localDateKey = () => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      };
+      $("today").textContent = new Intl.DateTimeFormat("en-HK", { weekday: "long", day: "numeric", month: "long" }).format(date);
+      $("today").dateTime = date.toISOString().slice(0, 10);
+      const hour = date.getHours();
+      $("greeting").textContent = hour < 12 ? "A gentler start." : hour < 18 ? "A moment for yourself." : "A softer evening.";
+
+      const fallbackForecast = [
+        { high: 29, low: 24, weather: "Sunny periods" },
+        { high: 29, low: 24, weather: "Cloudy" },
+        { high: 28, low: 24, weather: "Showers" },
+        { high: 27, low: 23, weather: "Sunny periods" },
+        { high: 28, low: 24, weather: "Cloudy" },
+        { high: 29, low: 25, weather: "Sunny" },
+        { high: 28, low: 24, weather: "Showers" }
+      ];
+
+      function weatherKind(text) {
+        const s = (text || "").toLowerCase();
+        if (/thunder|storm|雷/.test(s)) return "storm";
+        if (/rain|shower|drizzle|雨/.test(s)) return "rain";
+        if (/cloud|overcast|cloudy|多雲|陰/.test(s)) return "cloud";
+        return "sun";
+      }
+      function weatherEmoji(text) {
+        return ({ sun: "☀️", cloud: "☁️", rain: "🌧️", storm: "⛈️" })[weatherKind(text)];
+      }
+      function formatDay(item, index) {
+        if (item.week === "Today") return "Today";
+        if (item.week) return item.week.slice(0, 3);
+        const d = item.forecastDate ? new Date(`${item.forecastDate.slice(0,4)}-${item.forecastDate.slice(4,6)}-${item.forecastDate.slice(6,8)}T12:00:00`) : new Date(date.getFullYear(), date.getMonth(), date.getDate() + index, 12);
+        return new Intl.DateTimeFormat("en", { weekday: "short" }).format(d);
+      }
+      function renderForecast(days, upcoming = false) {
+        forecastDays = days.slice(0, 7);
+        $("forecast").innerHTML = forecastDays.map((d, i) => `
+          <div class="forecast-day" aria-label="${formatDay(d, i)}, ${d.weather}, high ${d.high} degrees, low ${d.low} degrees">
+            <span class="forecast-name">${formatDay(d, i)}</span>
+            <span class="forecast-icon" aria-hidden="true">${weatherEmoji(d.weather)}</span>
+            <span class="forecast-high">${d.high}°</span><span class="forecast-low">${d.low}°</span>
+          </div>`).join("");
+        if (forecastDays[0]) {
+          $("highTemp").textContent = `${upcoming ? "Next H" : "H"} ${forecastDays[0].high}°`;
+          $("lowTemp").textContent = `${upcoming ? "Next L" : "L"} ${forecastDays[0].low}°`;
+          $("currentCondition").textContent = forecastDays[0].weather || weatherCondition;
+          weatherCondition = forecastDays[0].weather || weatherCondition;
+          updateWeatherTheme(weatherCondition);
+        }
+      }
+      function updateWeatherTheme(condition) {
+        const kind = weatherKind(condition);
+        $("weatherCard").dataset.weather = kind;
+        document.documentElement.style.setProperty("--weather-page", ({ sun:"#fff4e4", cloud:"#edf1f3", rain:"#e8f1f8", storm:"#efebf8" })[kind]);
+        $("currentIcon").textContent = weatherEmoji(condition);
+      }
+      function updateForecastFromHko(raw) {
+        const result = (raw.weatherForecast || []).slice(0, 7).map((f) => ({
+          forecastDate: f.forecastDate,
+          week: f.week,
+          high: Math.round(Number(f.forecastMaxtemp?.value ?? 29)),
+          low: Math.round(Number(f.forecastMintemp?.value ?? 24)),
+          weather: f.forecastWeather || "Cloudy"
+        }));
+        if (result.length >= 7) return result;
+        return fallbackForecast;
+      }
+      function distance(a, b) {
+        const rad = (n) => n * Math.PI / 180;
+        const dLat = rad(a[0] - b[0]), dLon = rad(a[1] - b[1]);
+        const val = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLon / 2) ** 2;
+        return 6371 * 2 * Math.atan2(Math.sqrt(val), Math.sqrt(1 - val));
+      }
+      function closestStationName(stations) {
+        const named = stations.map((s) => ({
+          name: s.place,
+          coord: stationCoords[s.place]
+        })).filter((s) => s.coord);
+        if (!named.length) return "King's Park";
+        return named.sort((a, b) => distance(a.coord, [place.lat, place.lon]) - distance(b.coord, [place.lat, place.lon]))[0].name;
+      }
+      async function loadWeather() {
+        const base = "https://data.weather.gov.hk/weatherAPI/opendata/weather.php";
+        try {
+          const [currentResponse, forecastResponse] = await Promise.all([
+            fetch(`${base}?dataType=rhrread&lang=en`, { cache: "no-store" }),
+            fetch(`${base}?dataType=fnd&lang=en`, { cache: "no-store" })
+          ]);
+          if (!currentResponse.ok || !forecastResponse.ok) throw new Error("Observatory unavailable");
+          const [current, forecast] = await Promise.all([currentResponse.json(), forecastResponse.json()]);
+          const temps = current.temperature?.data || [];
+          const station = closestStationName(temps);
+          const reading = temps.find((x) => x.place === station) || temps.find((x) => /King's Park/i.test(x.place || "")) || temps[0];
+          if (reading && Number.isFinite(Number(reading.value))) $("currentTemp").textContent = Math.round(Number(reading.value));
+          if (current.humidity?.data?.[0]?.value != null) $("humidity").textContent = `Humidity ${current.humidity.data[0].value}%`;
+          const days = updateForecastFromHko(forecast);
+          renderForecast(days, true);
+          const currentIcon = Number(current.icon?.[0]);
+          const currentConditions = {
+            50: "Sunny", 51: "Sunny periods", 52: "Sunny intervals", 53: "Cloudy",
+            54: "Overcast", 60: "Light rain", 61: "Rain", 62: "Heavy rain",
+            63: "Showers", 64: "Thunderstorms"
+          };
+          weatherCondition = currentConditions[currentIcon] || days[0]?.weather || "Hong Kong";
+          $("currentCondition").textContent = weatherCondition;
+          updateWeatherTheme(weatherCondition);
+          $("weatherStatus").textContent = "Live · Hong Kong Observatory";
+          $("weatherLiveDot").classList.remove("fallback");
+          $("weatherUpdated").textContent = reading?.place ? `Nearest station · ${reading.place}` : "Updated just now";
+        } catch (error) {
+          renderForecast(fallbackForecast);
+          $("weatherStatus").textContent = "Typical conditions · offline";
+          $("weatherLiveDot").classList.add("fallback");
+          $("weatherUpdated").textContent = "Sample forecast";
+        }
+      }
+
+      function savedState() {
+        try {
+          const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+          const todayKey = localDateKey();
+          if (value.date !== todayKey) return { date: todayKey, checked: {}, special: value.special || "", specialDone: false };
+          return value;
+        }         catch { return { date: localDateKey(), checked: {}, special: "", specialDone: false }; }
+      }
+      let state = savedState();
+      function saveState() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+        catch { $("statusMessage").textContent = "Could not save reminders in this browser."; }
+      }
+      function renderChecklist() {
+        $("checklist").innerHTML = essentials.map((item) => `
+          <li><label class="check-row">
+            <input type="checkbox" data-item="${item.id}" ${state.checked?.[item.id] ? "checked" : ""}>
+            <span class="custom-check" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="m3 8 3.1 3.1L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="item-label">${item.name}</span><span class="item-emoji" aria-hidden="true">${item.icon}</span>
+          </label></li>`).join("");
+        $("checklist").querySelectorAll("input").forEach((box) => box.addEventListener("change", () => {
+          state.checked = { ...state.checked, [box.dataset.item]: box.checked };
+          saveState(); updateProgress();
+        }));
+        $("specialItem").value = state.special || "";
+        $("specialDone").checked = !!state.specialDone;
+        updateProgress();
+      }
+      function updateProgress() {
+        const checked = essentials.filter((item) => state.checked?.[item.id]).length;
+        $("progress").textContent = `${checked} of ${essentials.length}`;
+      }
+      $("specialItem").addEventListener("input", (event) => { state.special = event.target.value; saveState(); });
+      $("specialDone").addEventListener("change", (event) => { state.specialDone = event.target.checked; saveState(); });
+
+      const menu = $("locationMenu");
+      $("locationToggle").addEventListener("click", () => {
+        menu.hidden = !menu.hidden;
+        $("locationToggle").setAttribute("aria-expanded", String(!menu.hidden));
+        if (!menu.hidden) $("locationInput").focus();
+      });
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".location-wrap") && !menu.hidden) {
+          menu.hidden = true;
+          $("locationToggle").setAttribute("aria-expanded", "false");
+        }
+      });
+      $("locationMenu").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const input = $("locationInput");
+        const query = input.value.trim();
+        if (!query) return;
+        $("weatherStatus").textContent = "Finding your location…";
+        try {
+          const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(`${query}, Hong Kong`)}`;
+          const response = await fetch(url, { headers: { Accept: "application/json" } });
+          if (!response.ok) throw new Error("Location lookup failed");
+          const found = await response.json();
+          if (!found.length) throw new Error("No matching Hong Kong location");
+          const lat = Number(found[0].lat), lon = Number(found[0].lon);
+          if (lat < 22.1 || lat > 22.6 || lon < 113.8 || lon > 114.5) throw new Error("Choose a Hong Kong location for Observatory weather");
+          place = { name: found[0].name || query, lat, lon };
+          $("locationName").textContent = place.name;
+          $("weatherUpdated").textContent = "Finding nearest station…";
+          menu.hidden = true;
+          $("locationToggle").setAttribute("aria-expanded", "false");
+          await loadWeather();
+        } catch (error) {
+          $("weatherStatus").textContent = error.message === "No matching Hong Kong location" || error.message.startsWith("Choose a Hong Kong")
+            ? error.message
+            : "Location search unavailable";
+          $("weatherLiveDot").classList.add("fallback");
+        }
+      });
+
+      const api = "https://rt.data.gov.hk/v2/transport/citybus";
+      const newsProxy = "https://api.rss2json.com/v1/api.json?rss_url=";
+      const hkNewsFeed = "https://www.scmp.com/rss/91/feed";
+      async function translateToTraditionalChinese(text) {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-HK&dt=t&q=${encodeURIComponent(text)}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Translation unavailable");
+        const translated = await response.json();
+        const result = translated[0]?.map((part) => part[0]).join("");
+        if (!result) throw new Error("Translation unavailable");
+        return result
+          .replace(/公車/g, "巴士")
+          .replace(/大陸/g, "內地")
+          .replace(/皇崗路口/g, "皇崗口岸")
+          .replace(/新創公司/g, "初創企業")
+          .replace(/移民程序/g, "出入境程序");
+      }
+      async function loadNews() {
+        const content = $("newsContent");
+        try {
+          const response = await fetch(`${newsProxy}${encodeURIComponent(hkNewsFeed)}`);
+          if (!response.ok) throw new Error("News feed unavailable");
+          const feed = await response.json();
+          if (feed.status !== "ok" || !Array.isArray(feed.items)) throw new Error("News feed unavailable");
+          const articles = feed.items
+            .filter((item) => item.title && item.link && item.link.startsWith("https://www.scmp.com/"))
+            .sort((a, b) => Number(b.link.includes("/news/hong-kong/")) - Number(a.link.includes("/news/hong-kong/")));
+          if (!articles.length) throw new Error("No headlines available");
+          const lead = articles[0];
+          const summary = (lead.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+          const translated = await Promise.all([
+            translateToTraditionalChinese(lead.title),
+            summary ? translateToTraditionalChinese(summary.slice(0, 650)) : Promise.resolve("")
+          ]);
+          const leadLink = document.createElement("a");
+          leadLink.className = "news-lead";
+          leadLink.href = lead.link;
+          leadLink.target = "_blank";
+          leadLink.rel = "noopener noreferrer";
+          leadLink.lang = "zh-Hant";
+          leadLink.textContent = translated[0];
+          content.replaceChildren(leadLink);
+          if (translated[1]) {
+            const blurb = document.createElement("p");
+            blurb.className = "news-summary";
+            blurb.lang = "zh-Hant";
+            blurb.textContent = translated[1].length > 250 ? `${translated[1].slice(0, 247)}…` : translated[1];
+            content.append(blurb);
+          }
+          const more = articles.slice(1, 4);
+          if (more.length) {
+            const list = document.createElement("ul");
+            list.className = "news-list";
+            const translatedTitles = await Promise.all(more.map((item) => translateToTraditionalChinese(item.title)));
+            for (const [index, item] of more.entries()) {
+              const li = document.createElement("li");
+              li.className = "news-item";
+              const link = document.createElement("a");
+              link.href = item.link;
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
+              link.lang = "zh-Hant";
+              link.textContent = translatedTitles[index];
+              li.append(link);
+              list.append(li);
+            }
+            content.append(list);
+          }
+          const source = document.createElement("div");
+          source.className = "news-source";
+          const publisher = document.createElement("span");
+          publisher.textContent = "南華早報";
+          const freshness = document.createElement("span");
+          freshness.textContent = "最新消息 · 非閱讀量排名";
+          source.append(publisher, freshness);
+          content.append(source);
+        } catch (error) {
+          const empty = document.createElement("p");
+          empty.className = "news-empty";
+          empty.lang = "zh-Hant";
+          empty.textContent = "暫時無法載入繁體中文新聞，請稍後再試。";
+          content.replaceChildren(empty);
+          const source = document.createElement("div");
+          source.className = "news-source";
+          source.lang = "zh-Hant";
+          source.textContent = "南華早報即時新聞";
+          content.append(source);
+        }
+      }
+      async function loadBuses() {
+        try {
+          const directions = await Promise.all(["inbound", "outbound"].map(async (direction) => {
+            const response = await fetch(`${api}/route-stop/CTB/904/${direction}`);
+            if (!response.ok) return [];
+            const json = await response.json();
+            return (json.data || []).map((x) => ({ ...x, direction }));
+          }));
+          const stops = directions.flat();
+          const relevant = [];
+          for (let start = 0; start < stops.length; start += 8) {
+            const batch = await Promise.all(stops.slice(start, start + 8).map(async (stop) => {
+              const response = await fetch(`${api}/stop/${stop.stop}`);
+              if (!response.ok) return null;
+              const detail = await response.json();
+              const row = detail.data || {};
+              return (row.name_tc || "").includes("帝柏海灣") ? { ...stop, ...row } : null;
+            }));
+            relevant.push(...batch.filter(Boolean));
+          }
+          if (!relevant.length) throw new Error("904 stop unavailable");
+          const selected = relevant.find((s) => {
+            const seq = Number(s.seq);
+            return stops.some((x) => x.direction === s.direction && Number(x.seq) > seq);
+          }) || relevant[0];
+          const response = await fetch(`${api}/eta/CTB/${selected.stop}/904`);
+          if (!response.ok) throw new Error("Live bus data unavailable");
+          const json = await response.json();
+          const now = Date.now();
+          const arrivals = (json.data || []).filter((x) => x.route === "904" && (x.eta || x.rmk_en))
+            .map((x) => ({ ...x, minutes: x.eta ? Math.max(0, Math.round((new Date(x.eta).getTime() - now) / 60000)) : null }))
+            .sort((a, b) => (a.minutes ?? Infinity) - (b.minutes ?? Infinity)).slice(0, 3);
+          if (!arrivals.length) throw new Error("No live arrivals");
+          $("busTimes").innerHTML = arrivals.map((bus, i) => `
+            <div class="bus-time"><strong>${bus.minutes == null ? "No time" : bus.minutes === 0 ? "Due" : `${bus.minutes} min`}</strong><span>${i === 0 ? "Coming up" : i === 1 ? "Next" : bus.minutes == null ? "KMB cycle" : "Then"}</span></div>`).join("");
+          $("busNote").textContent = arrivals.some((bus) => bus.minutes == null)
+            ? "Live Citybus arrivals · third-party cycle time not published"
+            : "Live estimated arrivals · Citybus";
+        } catch (error) {
+          $("busNote").textContent = "Showing a typical estimate · live arrivals unavailable";
+        }
+      }
+
+      renderChecklist();
+      renderForecast(fallbackForecast);
+      loadWeather();
+      loadBuses();
+      loadNews();
+    })();
+  </script>
+</body>
+</html>
